@@ -35,7 +35,7 @@ Report sections:
 14 Pester 3.4 tests, all passing. PSScriptAnalyzer clean.
 
 ### Open items
-- None. Script ready for deployment to target systems.
+- Deploy and test on target system (next session).
 
 ---
 
