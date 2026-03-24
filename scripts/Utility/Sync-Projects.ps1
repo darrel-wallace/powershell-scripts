@@ -159,7 +159,6 @@ function Sync-Projects {
         'ai-agent-command-center'
         'ai-research-engine'
         'ai-platform-lab'
-        'aws-windows-onboarding-guide'
         'dev-environment-config'
         'home-network-config-and-optimization'
         'private-ai-research-data'
