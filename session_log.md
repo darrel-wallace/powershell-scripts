@@ -2,6 +2,43 @@
 
 ---
 
+## 2026-03-24 — Invoke-DiskSpaceAnalysis.ps1
+
+### Objective
+Build a comprehensive disk space analysis script for investigating C:\ fill issues (primary trigger: Docker builds failing due to disk pressure).
+
+### Design decisions
+
+| Decision | Rationale |
+|---|---|
+| Hierarchical rollup via hashtable | `Group-Object DirectoryName` only gives leaf-dir sizes; rolled-up totals required to see e.g. `C:\ProgramData\Docker` as a single large entry |
+| Suppress `Start-Transcript` / `Stop-Transcript` output | Both emit to the pipeline in PS5.1; suppressing with `| Out-Null` keeps the function return value clean (path string only) |
+| Scan all user profiles for Docker VHDX | When run as SYSTEM, `$env:LOCALAPPDATA` resolves to the SYSTEM profile, not the interactive user's profile; must enumerate `C:\Users\*` to find Docker Desktop WSL disks |
+| `Get-CimInstance` instead of `Get-WmiObject` | PSScriptAnalyzer `PSAvoidUsingWMICmdlet` warning; CimCmdlets ships with PS5.1 |
+| Rename `$profile` loop variable to `$userProfile` | `$profile` is a PS automatic variable; `PSAvoidAssignmentToAutomaticVariable` warning |
+| Run function once in `BeforeAll`, share via `$script:` | Multiple `It` blocks each invoking the function caused transcript conflicts and ~40s per test; single run keeps suite at ~42s total |
+
+### Script: `scripts/Storage/Invoke-DiskSpaceAnalysis.ps1`
+Report sections:
+1. Run metadata (identity, file count, error count, coverage warning)
+2. Top N directories -- hierarchical rollup (best for root cause analysis)
+3. Top N directories -- direct content only (pinpoints exact locations)
+4. Top N individual files
+5. Known Windows bloat locations (WinSxS, Installer, WU cache, Temp, IIS logs, Event Logs, Recycle Bin)
+6. System files (pagefile, hiberfil, swapfile)
+7. VSS shadow copy storage (via CIM -- not counted in file scan)
+8. Docker data paths (scans system paths + all user profiles; flags VHDX files with reclaim instructions)
+9. Top 20 blocked paths (shows coverage gaps for the running account)
+10. Remediation notes
+
+### Tests: `tests/Storage/Invoke-DiskSpaceAnalysis.Tests.ps1`
+14 Pester 3.4 tests, all passing. PSScriptAnalyzer clean.
+
+### Open items
+- None. Script ready for deployment to target systems.
+
+---
+
 ## 2026-03-24 — Project initialization + Sync-Projects.ps1
 
 ### Objective
