@@ -35,7 +35,14 @@ Report sections:
 14 Pester 3.4 tests, all passing. PSScriptAnalyzer clean.
 
 ### Open items
-- Deploy and test on target system (next session).
+- None. Tested on target system and running clean.
+
+### Deployment note
+Task Scheduler action must use `-Command` with dot-source, not `-File`, since the script is function-only:
+```
+-NoProfile -ExecutionPolicy Bypass -Command "& { . 'C:\temp\Scripts\Invoke-DiskSpaceAnalysis.ps1'; Invoke-DiskSpaceAnalysis -DrivePath 'C:\' -OutputPath 'C:\temp' }"
+```
+`-File` with a function-only script loads the function and exits without calling it. Also use `C:\` not `C:` -- the bare drive letter resolves to the SYSTEM account's working directory under Task Scheduler.
 
 ---
 
